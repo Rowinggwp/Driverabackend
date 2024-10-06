@@ -3,6 +3,7 @@ const cors = require('cors');
 
 
 const {  dbConnection }  = require('../database/config');
+const buy = require('./buy');
 
 
 
@@ -15,7 +16,8 @@ class Server {
         //routes
         this.paths = {
             products:       '/api/product',
-            auth:           '/auth'                                               
+            auth:           '/auth',
+            buy:            '/api/user'                                               
         }
        
         // Conectar a base de datos
@@ -46,7 +48,8 @@ class Server {
     routes(){
 
         this.app.use(this.paths.products , require('../routes/product'));
-      
+        this.app.use(this.paths.products , require('../routes/user'));
+
     }
 
     listen(){
