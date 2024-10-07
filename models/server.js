@@ -48,7 +48,7 @@ class Server {
     routes(){
 
         this.app.use(this.paths.products , require('../routes/product'));
-        this.app.use(this.paths.products , require('../routes/user'));
+        
 
     }
 

@@ -24,6 +24,24 @@ const getProducts  = async ( req, res = response) => {
    
 }
 
+//Obtener Categoria por ID : populate
+const getProductByID = async ( req , res = response ) => {
+    
+    const { id } = req.params;
+
+      
+    const product = await Product.findById( id );
+
+    if ( !product.state ) {
+        res.status(400).json({
+           msg: 'Producto se encuentra desactivada'
+        });
+    }
+
+    res.json( product );
+}
+
+
 // crear Producto
 const createProduct = async (req , res = response) => {
     
@@ -55,12 +73,42 @@ const createProduct = async (req , res = response) => {
     res.status(201).json( product );
 
 }
+// Actualizar Producto
+const updateProduct = async ( req, res = response ) => {
+    
+    const { id } = req.params;
+    const { state, user, ...dataProduct } = req.body
+
+    if ( dataProduct.name ){
+        dataProduct.name = dataProduct.name.toUpperCase();
+    }
+    const product = await Product.findByIdAndUpdate( id, dataProduct , { new: true });
+
+    res.json({
+        product
+    })
+
+}
+
+// desactivar o Borrar categoria
+const deleteProduct = async ( req, res= response) => {
+    const { id } = req.params;
+ 
+    const product = await Product.findByIdAndUpdate(id, { state : false } , { new: true });
+
+    res.json({
+        product
+    })
+
+}
 
 
 
     
 module.exports = {
     createProduct,   
-    getProducts
-  
+    getProducts,
+    getProductByID,
+    updateProduct,
+    deleteProduct
 }

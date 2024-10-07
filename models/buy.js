@@ -1,6 +1,20 @@
 const { Schema, model } = require('mongoose');
 
 const BuySchema = Schema({
+  
+    total: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    },
+    state: {
+        type: Boolean,
+        default: true 
+    },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User', 
@@ -16,27 +30,11 @@ const BuySchema = Schema({
             quantity: {
                 type: Number,
                 required: true,
-                default: 1 
+                default: 1
             },
-            price: {
-                type: Number,
-                required: true
-            }
+
         }
     ],
-    total: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    state: {
-        type: Boolean,
-        default: true 
-    }
 });
 
 

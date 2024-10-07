@@ -6,6 +6,9 @@ const ProductSchema = Schema({
         required: [true, 'El nombre es obligatorio'],
         unique: true
     },
+    title:{
+        type: String  
+    },
     description: {
         type: String
     },
@@ -22,14 +25,14 @@ const ProductSchema = Schema({
         type: Boolean,
         default: true
     },
-    img: {
+    images: {
         type: String
     }
 });
 
 
 ProductSchema.methods.toJSON = function () {
-    const { __v, state, ...productObject } = this.toObject();
+    const { __v, ...productObject } = this.toObject();
     return productObject;
 }
 
