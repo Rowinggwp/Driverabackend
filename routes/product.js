@@ -13,9 +13,7 @@ const router = Router();
   router.get('/:id', getProductByID );
 
 
-  router.post('/', 
-    createProduct
-  )
+  router.post('/', createProduct )
 
   router.put('/:id', updateProduct );
 

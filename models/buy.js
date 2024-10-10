@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const client = require('./client');
 
 const BuySchema = Schema({
   
@@ -18,7 +19,10 @@ const BuySchema = Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User', 
-        required: true
+    },
+    client: {
+        type: Schema.Types.ObjectId,
+        ref: 'Client', 
     },
     products: [
         {
@@ -39,8 +43,8 @@ const BuySchema = Schema({
 
 
 BuySchema.methods.toJSON = function () {
-    const { __v, state, ...buyObject } = this.toObject();
-    return buyObject;
+    const { __v, state, ...buyObjeto } = this.toObject();
+    return buyObjeto;
 }
 
 module.exports = model('Buy', BuySchema);

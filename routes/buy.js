@@ -1,16 +1,27 @@
-const { Router } = require ('express');
-
-const { getProducts, createProduct } = require('../controllers/buy');
-
 const { Router } = require('express');
-const { getBuys, createBuy } = require('../controllers/buy');
+const {
+    getBuys,
+    getBuyById,
+    createBuy,
+    updateBuy,
+    deleteBuy
+} = require('../controllers/buy'); // Importar los controladores
 
 const router = Router();
 
-// Obtener compras
+// Obtener todas las compras
 router.get('/', getBuys);
 
-// Crear compra
+// Obtener una compra por ID
+router.get('/:id', getBuyById);
+
+// Crear una compra
 router.post('/', createBuy);
+
+// Actualizar una compra por ID
+router.put('/:id', updateBuy);
+
+// Eliminar (desactivar) una compra por ID
+router.delete('/:id', deleteBuy);
 
 module.exports = router;

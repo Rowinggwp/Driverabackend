@@ -18,19 +18,19 @@ const ClientSchema = Schema({
         type: Boolean,
         default: true
     },    
-    gmail: {
+    phone: {
         type: String,
-        required: [true, 'El correo es obligatorio'],
+        required: [true, 'El Numero es necesario'],
     },
 });
 
 
 
-UserSchema.methods.toJSON = function () {    
+ClientSchema.methods.toJSON = function () {    
     const { __v, password, _id, ...userObject} = this.toObject();
     userObject.uid = _id;
     return userObject;
 }
 
 
-module.exports = model('User', UserSchema);
+module.exports = model('Client', ClientSchema);

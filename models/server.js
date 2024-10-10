@@ -13,51 +13,47 @@ class Server {
         this.app = express();
         this.port = process.env.PORT;
 
-        //routes
+        // Rutas
         this.paths = {
-            products:       '/api/product',
-            auth:           '/auth',
-            buy:            '/api/user'                                               
-        }
+            products: '/api/product',
+            auth: '/auth',
+            buy: '/api/buy' // Cambié la ruta para la API de buy
+        };
        
-        // Conectar a base de datos
+        // Conectar a la base de datos
         this.conectarDB();
 
         // Middlewares
         this.middlewares();   
-           
 
         // Rutas de mi aplicación
         this.routes();
     }
 
-
-    async conectarDB(){
+    async conectarDB() {
         await dbConnection();
     }
 
-    middlewares(){
+    middlewares() {
         // CORS
-        this.app.use( cors() );
+        this.app.use(cors());
 
         // Lectura y parseo del body
-        this.app.use ( express.json() );
-       
+        this.app.use(express.json());
     }
 
-    routes(){
-
-        this.app.use(this.paths.products , require('../routes/product'));
-        
-
+    routes() {
+        this.app.use(this.paths.products, require('../routes/product'));
+        this.app.use(this.paths.buy, require('../routes/buy')); //ruta para buy
     }
 
-    listen(){
+    listen() {
         this.app.listen(this.port, () => {
-            console.log('Servidor corriendo en  puerto', this.port);
-        })
+            console.log('Servidor corriendo en puerto', this.port);
+        });
     }
 }
 
 module.exports = Server;
+
 
