@@ -1,5 +1,6 @@
 const { response, request } = require('express');
 const User = require('../models/user');
+const bcryptjs = require("bcryptjs");
 
 // Obtener usuarios - paginado
 const getUsers = async (req, res = response) => {
@@ -22,7 +23,14 @@ const createUser = async (req, res = response) => {
     const { name, email, password, role } = req.body;
     
     const user = new User({ name, email, password, role });
+
+    //Encriptar la contraseña
+    const salt = bcryptjs.genSaltSync();
+    user.password = bcryptjs.hashSync(password, salt);
+
     await user.save();
+
+
 
     res.status(201).json(user);
 };
@@ -33,11 +41,11 @@ const updateUser = async (req = request, res = response) => {
     const { state, password, ...data } = req.body;
 
     if (password) {
-        // Aquí puedes hashear la contraseña si es necesario
+        const salt = bcryptjs.genSaltSync();
+        user.password = bcryptjs.hashSync(password, salt);
     }
-
+    
     const user = await User.findByIdAndUpdate(id, data, { new: true });
-
     res.json(user);
 };
 

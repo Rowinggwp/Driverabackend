@@ -11,7 +11,8 @@ const getProducts  = async ( req, res = response) => {
 
     const [ total, products ] = await Promise.all([
         Product.countDocuments( query ),
-        Product.find( query )           
+        Product.find( query  )
+            .populate("user", "name")           
             .skip( Number( desde ))
             .limit(Number( limit ))
     ]);
@@ -46,11 +47,9 @@ const getProductByID = async ( req , res = response ) => {
 const createProduct = async (req , res = response) => {
     
     const { state, user, ...body } = req.body
-
+    
     body.name = body.name.toUpperCase();
     
-
-   
     const existProduct = await Product.findOne({ name: body.name } );
     
     
@@ -63,7 +62,8 @@ const createProduct = async (req , res = response) => {
 
 
     const data = {
-        ...body
+        ...body, 
+        user: req.usuario._id
     }
 
     const product = new Product ( data );
