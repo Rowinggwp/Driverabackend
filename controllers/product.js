@@ -1,114 +1,104 @@
 const { response, request } = require("express");
-
 const Product = require("../models/product");
 
+// Obtener productos - paginado - total - Populate
+const getProducts = async (req, res = response) => {
+    const { limit = 25, desde = 0 } = req.query;
+    const query = { state: true };
 
-//obtenerCategorias - paginado - total - Populate
-const getProducts  = async ( req, res = response) => {
-  
-    const { limit = 25 , desde = 0 } = req.query; 
-    const query =  { state : true };
-
-    const [ total, products ] = await Promise.all([
-        Product.countDocuments( query ),
-        Product.find( query  )
-            .populate("user", "name")           
-            .skip( Number( desde ))
-            .limit(Number( limit ))
+    const [total, products] = await Promise.all([
+        Product.countDocuments(query),
+        Product.find(query)
+            .populate("user", "name")
+            .skip(Number(desde))
+            .limit(Number(limit)),
     ]);
 
     res.json({
         total,
-        products
+        products,
     });
+};
 
-   
-}
-
-//Obtener Categoria por ID : populate
-const getProductByID = async ( req , res = response ) => {
-    
+// Obtener Producto por ID: populate
+const getProductByID = async (req, res = response) => {
     const { id } = req.params;
 
-      
-    const product = await Product.findById( id );
+    const product = await Product.findById(id);
 
-    if ( !product.state ) {
+   
+    if (!product.state) {
         res.status(400).json({
-           msg: 'Producto se encuentra desactivada'
+            msg: 'El producto se encuentra desactivado',
         });
     }
 
-    res.json( product );
-}
+    res.json(product);
+};
 
+// Crear Producto con validación de archivo
+const createProduct = async (req, res = response) => {
+    // Validar archivo subido
+    if (!req.files || Object.keys(req.files).length === 0 || !req.files.uploadFile) {
+        return res.status(400).json({
+            msg: 'No hay archivos que subir - ValidateFilesUpload',
+        });
+    }
 
-// crear Producto
-const createProduct = async (req , res = response) => {
-    
-    const { state, user, ...body } = req.body
-    
+    const { state, user, ...body } = req.body;
+
     body.name = body.name.toUpperCase();
-    
-    const existProduct = await Product.findOne({ name: body.name } );
-    
-    
+
+    const existProduct = await Product.findOne({ name: body.name });
+
     if (existProduct) {
         return res.status(400).json({
-            msg: `La Producto ${ existProduct.name }, ya existe`
+            msg: `El producto ${existProduct.name}, ya existe`,
         });
     }
 
-
-
     const data = {
-        ...body, 
-        user: req.usuario._id
-    }
+        ...body,
+        user: req.usuario._id,
+    };
 
-    const product = new Product ( data );
+    const product = new Product(data);
 
     await product.save();
 
-    res.status(201).json( product );
+    res.status(201).json(product);
+};
 
-}
 // Actualizar Producto
-const updateProduct = async ( req, res = response ) => {
-    
+const updateProduct = async (req, res = response) => {
     const { id } = req.params;
-    const { state, user, ...dataProduct } = req.body
+    const { state, user, ...dataProduct } = req.body;
 
-    if ( dataProduct.name ){
+    if (dataProduct.name) {
         dataProduct.name = dataProduct.name.toUpperCase();
     }
-    const product = await Product.findByIdAndUpdate( id, dataProduct , { new: true });
+    const product = await Product.findByIdAndUpdate(id, dataProduct, { new: true });
 
     res.json({
-        product
-    })
+        product,
+    });
+};
 
-}
-
-// desactivar o Borrar categoria
-const deleteProduct = async ( req, res= response) => {
+// Desactivar o Borrar producto
+const deleteProduct = async (req, res = response) => {
     const { id } = req.params;
- 
-    const product = await Product.findByIdAndUpdate(id, { state : false } , { new: true });
+
+    const product = await Product.findByIdAndUpdate(id, { state: false }, { new: true });
 
     res.json({
-        product
-    })
+        product,
+    });
+};
 
-}
-
-
-
-    
 module.exports = {
-    createProduct,   
+    createProduct,
     getProducts,
     getProductByID,
     updateProduct,
-    deleteProduct
-}
+    deleteProduct,
+};

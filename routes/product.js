@@ -1,28 +1,36 @@
-const { Router } = require ('express');
+const { Router } = require('express');
 const { check } = require('express-validator');
 const { getProducts, createProduct, getProductByID, deleteProduct, updateProduct } = require('../controllers/product');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
-
+const { existProductById } = require('../helpers/db-validators');
 
 const router = Router();
-  router.get('/', getProducts );
-  router.get('/findAll', getProducts );
-  router.get('/:id', getProductByID );
 
-  router.post('/',[ 
+router.get('/', getProducts);
+
+router.get('/:id', [
+    check('id', 'El ID no es válido').isMongoId(),
+    check('id').custom(existProductById),
+    validateFields
+], getProductByID);
+
+router.post('/', [
     validateJWT,
     check('name', 'El nombre es obligatorio').not().isEmpty(),
-   // check('category', 'El categoria no es un Id Válido').isMongoId(),
-   // check('category').custom ( existCategoryById ),
     validateFields
-  ], createProduct )
+], createProduct);
 
-  
-  router.put('/:id', updateProduct );
-  router.delete('/:id', deleteProduct );
+router.put('/:id', [
+    check('id', 'El ID no es válido').isMongoId(),
+    check('id').custom(existProductById),
+    validateFields
+], updateProduct);
 
+router.delete('/:id', [
+    check('id', 'El ID no es válido').isMongoId(),
+    check('id').custom(existProductById),
+    validateFields
+], deleteProduct);
 
-
-
-  module.exports = router;
+module.exports = router;

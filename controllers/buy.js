@@ -1,7 +1,7 @@
 const { response } = require("express");
 const Buy = require("../models/buy");
-
-
+const Product = require("../models/product");
+const mongoose = require("mongoose");
 
 // Obtener todas las compras - paginado - total
 const getBuys = async (req, res = response) => {
@@ -41,21 +41,53 @@ const getBuyById = async (req, res = response) => {
 
 // Crear una nueva compra
 const createBuy = async (req, res = response) => {
-    const { state, user, ...data} = req.body;
+    const { user, products, ...data } = req.body;
 
-    // // Crear una nueva compra
-    // const buy = new Buy({
-    //     total,
-    //     user,
-    //     products
-    // });
+    // Iniciar una sesión para manejar la transacción
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    const buy = new Buy ( data );
+    try {
+        for (const item of products) {
+            const product = await Product.findById(item.product);
 
-    // Guardar en la base de datos
-    await buy.save();
+            if (!product) {
+                throw new Error(`El producto con el ID ${item.product} no existe`);
+            }
 
-    res.status(201).json(buy);
+            // Verificar que haya suficiente stock
+            if (product.stock < item.quantity) {
+                throw new Error(`Stock insuficiente para el producto ${product.name}`);
+            }
+
+            // Descontar el stock
+            product.stock -= item.quantity;
+            await product.save({ session });
+        }
+
+        // Crear la nueva compra
+        const buy = new Buy({
+            ...data,
+            user,
+            products
+        });
+
+        // Guardar la compra en la base de datos
+        await buy.save({ session });
+
+        // Confirmar la transacción
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(201).json(buy);
+    } catch (error) {
+        // Si algo falla, revertir los cambios
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({
+            msg: error.message
+        });
+    }
 };
 
 // Actualizar una compra

@@ -6,39 +6,46 @@ const ProductSchema = Schema({
         required: [true, 'El nombre es obligatorio'],
         unique: true
     },
-    title:{
-        type: String  
+    title: {
+        type: String,
+        default: ''
     },
     description: {
-        type: String
+        type: String,
+        default: ''
     },
     price: {
         type: Number,
-        default:0
+        required: [true, 'El precio es obligatorio'],
+        default: 0,
+        min: [0, 'El precio no puede ser negativo']
     },    
     state: {
         type: Boolean,
         default: true,
         required: true
     },
-    stock : {
-        type: Boolean,
-        default: true
+    stock: {
+        type: Number,
+        required: [true, 'El stock es obligatorio'],
+        default: 0,
+        min: [0, 'El stock no puede ser negativo']
     },
-    images: {
-        type: String
-    },
+   // images: {
+     //   type: [String],  // Permite manejar múltiples imágenes
+       // default: []
+   // },
     user: {
         type: Schema.Types.ObjectId,
-        ref: 'User', 
-    },
+        ref: 'User',
+        required: true
+    }
 });
 
-
+// Remover __v y cualquier otra propiedad sensible al devolver el producto como JSON
 ProductSchema.methods.toJSON = function () {
     const { __v, ...productObject } = this.toObject();
     return productObject;
 }
-
 
 module.exports = model('Product', ProductSchema);
