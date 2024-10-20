@@ -39,11 +39,11 @@ const getProductByID = async (req, res = response) => {
 // Crear Producto con validación de archivo
 const createProduct = async (req, res = response) => {
     // Validar archivo subido
-    if (!req.files || Object.keys(req.files).length === 0 || !req.files.uploadFile) {
-        return res.status(400).json({
-            msg: 'No hay archivos que subir - ValidateFilesUpload',
-        });
-    }
+   // if (!req.files || Object.keys(req.files).length === 0 || !req.files.uploadFile) {
+     //   return res.status(400).json({
+       //     msg: 'No hay archivos que subir - ValidateFilesUpload',
+      //  });
+   // }
 
     const { state, user, ...body } = req.body;
 

@@ -3,6 +3,58 @@ const Buy = require("../models/buy");
 const Product = require("../models/product");
 const mongoose = require("mongoose");
 
+// Función para comprar un producto
+const buyProduct = async (req, res = response) => {
+    const { userId, productId, quantity } = req.body;
+
+    // Iniciar una sesión para manejar la transacción
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // Buscar el producto por ID
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            throw new Error(`El producto con el ID ${productId} no existe`);
+        }
+
+        // Verificar si hay suficiente stock
+        if (product.stock < quantity) {
+            throw new Error(`Stock insuficiente para el producto ${product.name}`);
+        }
+
+        // Actualizar el stock
+        product.stock -= quantity;
+        await product.save({ session });
+
+        // Crear una nueva compra para el usuario
+        const buy = new Buy({
+            user: userId,
+            products: [{ product: productId, quantity }]
+        });
+
+        // Guardar la compra
+        await buy.save({ session });
+
+        // Confirmar la transacción
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(201).json({
+            msg: 'Compra realizada con éxito',
+            buy
+        });
+    } catch (error) {
+        // Si algo falla, revertir los cambios
+        await session.abortTransaction();
+        session.endSession();
+        res.status(400).json({
+            msg: error.message
+        });
+    }
+};
+
 // Obtener todas las compras - paginado - total
 const getBuys = async (req, res = response) => {
     const { limit = 25, desde = 0 } = req.query;
@@ -11,8 +63,8 @@ const getBuys = async (req, res = response) => {
     const [total, buys] = await Promise.all([
         Buy.countDocuments(query),
         Buy.find(query)
-            .populate("user", "name") // Popular datos del usuario
-            .populate("products.product", "name price") // Popular datos del producto
+            .populate("user", "name")
+            .populate("products.product", "name price")
             .skip(Number(desde))
             .limit(Number(limit))
     ]);
@@ -27,7 +79,7 @@ const getBuys = async (req, res = response) => {
 const getBuyById = async (req, res = response) => {
     const { id } = req.params;
     const buy = await Buy.findById(id)
-        .populate("user", "name") // Popular datos del usuario
+        .populate("user", "name")
         .populate("products.product", "name price");
 
     if (!buy) {
@@ -43,7 +95,6 @@ const getBuyById = async (req, res = response) => {
 const createBuy = async (req, res = response) => {
     const { user, products, ...data } = req.body;
 
-    // Iniciar una sesión para manejar la transacción
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -55,33 +106,26 @@ const createBuy = async (req, res = response) => {
                 throw new Error(`El producto con el ID ${item.product} no existe`);
             }
 
-            // Verificar que haya suficiente stock
             if (product.stock < item.quantity) {
                 throw new Error(`Stock insuficiente para el producto ${product.name}`);
             }
 
-            // Descontar el stock
             product.stock -= item.quantity;
             await product.save({ session });
         }
 
-        // Crear la nueva compra
         const buy = new Buy({
             ...data,
             user,
             products
         });
 
-        // Guardar la compra en la base de datos
         await buy.save({ session });
-
-        // Confirmar la transacción
         await session.commitTransaction();
         session.endSession();
 
         res.status(201).json(buy);
     } catch (error) {
-        // Si algo falla, revertir los cambios
         await session.abortTransaction();
         session.endSession();
         return res.status(400).json({
@@ -121,10 +165,32 @@ const deleteBuy = async (req, res = response) => {
     res.json(buy);
 };
 
+// Obtener historial de compras de un usuario
+const getBuyHistory = async (req, res = response) => {
+    const { userId } = req.params;
+
+    const buys = await Buy.find({ user: userId })
+        .populate('products.product', 'name price')
+        .populate('user', 'name');
+
+    if (!buys) {
+        return res.status(404).json({
+            msg: "No se encontraron compras para este usuario"
+        });
+    }
+
+    res.json({
+        totalCompras: buys.length,
+        historial: buys
+    });
+};
+
 module.exports = {
+    buyProduct,
     getBuys,
     getBuyById,
     createBuy,
     updateBuy,
-    deleteBuy
+    deleteBuy,
+    getBuyHistory // Añadido el historial de compras
 };

@@ -31,10 +31,10 @@ const ProductSchema = Schema({
         default: 0,
         min: [0, 'El stock no puede ser negativo']
     },
-   // images: {
-     //   type: [String],  // Permite manejar múltiples imágenes
-       // default: []
-   // },
+    images: {
+        type: [String],  // Permite manejar múltiples imágenes
+        default: []
+   },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
