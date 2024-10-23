@@ -10,7 +10,7 @@ const ClientSchema = Schema({
         type: String,
         required: [true, 'El nombre es obligatorio'],
     },
-    gmail: {
+    email: {
         type: String,
         required: [true, 'El correo es obligatorio'],
     },
@@ -22,6 +22,10 @@ const ClientSchema = Schema({
         type: String,
         required: [true, 'El Numero es necesario'],
     },
+    address:{
+        type: String,
+        required: [true, 'la direccion es obligatoria']
+    }
 });
 
 

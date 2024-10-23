@@ -2,7 +2,10 @@ const { Schema, model } = require('mongoose');
 const client = require('./client');
 
 const BuySchema = Schema({
-  
+    //numero del pedido
+    numberBuy: {
+        type: Number
+    },
     total: {
         type: Number,
         required: true,

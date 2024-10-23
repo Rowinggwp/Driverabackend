@@ -3,6 +3,7 @@ const Client = require('../models/client');
 const Category = require('../models/category');
 const Product = require('../models/product');
 const User = require('../models/user');
+const product = require('../models/product');
 
 // Validar si el ID de Buy existe
 const existBuyById = async (id) => {
@@ -44,10 +45,33 @@ const existUserById = async (id) => {
     }
 };
 
+const validateProducts = async (products) => {
+    for (const item of products) {
+        const product = await Product.findById(item.product);
+
+        if (!product) {
+            throw new Error(`El producto con el ID ${item.product} no existe`);
+        }
+
+       if (product.stock < item.quantity) {
+            throw new Error(`Stock insuficiente para el producto ${product.name}`);
+        }
+
+    }
+
+
+}
+
+
+
+
+
+
 module.exports = {
     existBuyById,
     existClientById,
     existCategoryById,
     existProductById,
-    existUserById
+    existUserById,
+    validateProducts
 };

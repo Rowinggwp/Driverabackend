@@ -64,7 +64,8 @@ const getBuys = async (req, res = response) => {
         Buy.countDocuments(query),
         Buy.find(query)
             .populate("user", "name")
-            .populate("products.product", "name price")
+            .populate("client", "dni name phone address")
+            .populate("products.product", "name price description")
             .skip(Number(desde))
             .limit(Number(limit))
     ]);
@@ -80,7 +81,8 @@ const getBuyById = async (req, res = response) => {
     const { id } = req.params;
     const buy = await Buy.findById(id)
         .populate("user", "name")
-        .populate("products.product", "name price");
+        .populate("client", "dni name phone address")
+        .populate("products.product", "name price description");
 
     if (!buy) {
         return res.status(404).json({
@@ -93,41 +95,40 @@ const getBuyById = async (req, res = response) => {
 
 // Crear una nueva compra
 const createBuy = async (req, res = response) => {
-    const { user, products, ...data } = req.body;
+    const { products, ...data } = req.body;
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    //const session = await mongoose.startSession();
+   // session.startTransaction();
 
     try {
         for (const item of products) {
             const product = await Product.findById(item.product);
 
-            if (!product) {
-                throw new Error(`El producto con el ID ${item.product} no existe`);
-            }
-
-            if (product.stock < item.quantity) {
-                throw new Error(`Stock insuficiente para el producto ${product.name}`);
-            }
-
             product.stock -= item.quantity;
-            await product.save({ session });
-        }
+console.log(product.stock);
 
+            await Product.findByIdAndUpdate(product._id, product, { new: true });
+
+        }
+        
         const buy = new Buy({
             ...data,
-            user,
+            user : req.usuario._id,
             products
         });
 
-        await buy.save({ session });
-        await session.commitTransaction();
-        session.endSession();
+        await buy.save();
+       const newbuy = await Buy.findById (buy._id)
+       .populate("user", "name")
+       .populate("client", "dni name phone address")
+       .populate("products.product", "name description price ")
 
-        res.status(201).json(buy);
+        res.status(201).json(newbuy);
+
+
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
+       // await session.abortTransaction();
+       // session.endSession();
         return res.status(400).json({
             msg: error.message
         });

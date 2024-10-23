@@ -10,10 +10,7 @@ const CategorySchema = Schema({
         type: Boolean,
         default: true
     },
-    products: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Product'  // Relación con el modelo de producto
-    }]
+
 });
 
 CategorySchema.methods.toJSON = function () {

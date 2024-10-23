@@ -1,6 +1,8 @@
 const { Schema, model } = require('mongoose');
+const category = require('./category');
 
 const ProductSchema = Schema({ 
+    
     name: {
         type: String,
         required: [true, 'El nombre es obligatorio'],
@@ -38,6 +40,11 @@ const ProductSchema = Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
+        required: true
+    },
+    category: {
+        type: Schema.Types.ObjectId,
+        ref: 'Category',
         required: true
     }
 });
