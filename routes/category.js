@@ -14,8 +14,10 @@ router.get('/:id', [
     validateFields
 ], getCategoryById);
 
-router.post('/', createCategory);
-
+router.post('/', [
+    check('name', 'El nombre es obligatorio').not().isEmpty(),
+    validateFields
+], createCategory);
 router.put('/:id', [
     check('id', 'El ID no es válido').isMongoId(),
     check('id').custom(existCategoryById),
