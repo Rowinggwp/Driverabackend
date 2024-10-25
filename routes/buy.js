@@ -1,22 +1,19 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
-const { buyProduct, getBuyHistory, getBuys, getBuyById, createBuy, updateBuy, deleteBuy } = require("../controllers/buy");
+const { buyProduct, getBuyHistory, getBuys, getBuyById, createBuy, updateBuy, deleteBuy, getBuyByUser, getBuyByClient } = require("../controllers/buy");
 const { validateFields } = require("../middlewares/validate-fields");
 const { existBuyById, existClientById, validateProducts } = require("../helpers/db-validators");
 const { validateJWT } = require("../middlewares/validate-jwt");
 
 const router = Router();
 
-// Ruta para comprar un producto
-router.post("/comprar", [
-    check('userId', 'El ID del usuario es obligatorio').isMongoId(),
-    check('productId', 'El ID del producto es obligatorio').isMongoId(),
-    check('quantity', 'La cantidad debe ser un número mayor que 0').isInt({ min: 1 }),
-    validateFields
-], buyProduct);
 
 // Otras rutas existentes
 router.get('/', getBuys);
+
+router.get('/byuser/:id', getBuyByUser);
+
+router.get('/byclient/:id', getBuyByClient);
 
 router.get('/:id', [
     check('id', 'El ID no es válido').isMongoId(),

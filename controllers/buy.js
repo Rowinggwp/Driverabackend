@@ -2,58 +2,7 @@ const { response } = require("express");
 const Buy = require("../models/buy");
 const Product = require("../models/product");
 const mongoose = require("mongoose");
-
-// Función para comprar un producto
-const buyProduct = async (req, res = response) => {
-    const { userId, productId, quantity } = req.body;
-
-    // Iniciar una sesión para manejar la transacción
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-        // Buscar el producto por ID
-        const product = await Product.findById(productId);
-
-        if (!product) {
-            throw new Error(`El producto con el ID ${productId} no existe`);
-        }
-
-        // Verificar si hay suficiente stock
-        if (product.stock < quantity) {
-            throw new Error(`Stock insuficiente para el producto ${product.name}`);
-        }
-
-        // Actualizar el stock
-        product.stock -= quantity;
-        await product.save({ session });
-
-        // Crear una nueva compra para el usuario
-        const buy = new Buy({
-            user: userId,
-            products: [{ product: productId, quantity }]
-        });
-
-        // Guardar la compra
-        await buy.save({ session });
-
-        // Confirmar la transacción
-        await session.commitTransaction();
-        session.endSession();
-
-        res.status(201).json({
-            msg: 'Compra realizada con éxito',
-            buy
-        });
-    } catch (error) {
-        // Si algo falla, revertir los cambios
-        await session.abortTransaction();
-        session.endSession();
-        res.status(400).json({
-            msg: error.message
-        });
-    }
-};
+const Pay = require("../models/pay");
 
 // Obtener todas las compras - paginado - total
 const getBuys = async (req, res = response) => {
@@ -66,6 +15,50 @@ const getBuys = async (req, res = response) => {
             .populate("user", "name")
             .populate("client", "dni name phone address")
             .populate("products.product", "name price description")
+            .populate("pay", "numberpay amountpay date ")
+            .skip(Number(desde))
+            .limit(Number(limit))
+    ]);
+
+    res.json({
+        total,
+        buys
+    });
+};
+
+const getBuyByUser = async (req, res = response) => {
+    const { limit = 25, desde = 0 } = req.query;
+    const { id } = req.params;
+    const query = { $and : [{state: true}, {user : id}] };
+
+    const [total, buys] = await Promise.all([
+        Buy.countDocuments(query),
+        Buy.find(query)
+            .populate("user", "name")
+            .populate("client", "dni name phone address")
+            .populate("products.product", "name price description")
+            .populate("pay", "numberpay amountpay date ")
+            .skip(Number(desde))
+            .limit(Number(limit))
+    ]);
+
+    res.json({
+        total,
+        buys
+    });
+};
+const getBuyByClient = async (req, res = response) => {
+    const { limit = 25, desde = 0 } = req.query;
+    const { id } = req.params;
+    const query = { $and : [{state: true}, {client : id}] };
+
+    const [total, buys] = await Promise.all([
+        Buy.countDocuments(query),
+        Buy.find(query)
+            .populate("user", "name")
+            .populate("client", "dni name phone address")
+            .populate("products.product", "name price description")
+            .populate("pay", "numberpay amountpay date ")
             .skip(Number(desde))
             .limit(Number(limit))
     ]);
@@ -82,7 +75,8 @@ const getBuyById = async (req, res = response) => {
     const buy = await Buy.findById(id)
         .populate("user", "name")
         .populate("client", "dni name phone address")
-        .populate("products.product", "name price description");
+        .populate("products.product", "name price description")
+        .populate("pay", "numberpay amountpay date ")
 
     if (!buy) {
         return res.status(404).json({
@@ -95,17 +89,24 @@ const getBuyById = async (req, res = response) => {
 
 // Crear una nueva compra
 const createBuy = async (req, res = response) => {
-    const { products, ...data } = req.body;
-
-    //const session = await mongoose.startSession();
-   // session.startTransaction();
+    const { products,pay, ...data } = req.body;
+console.log(pay);
 
     try {
+
+       const payBuy = new Pay ({
+        amountpay : pay.amountpay,
+        numberpay : pay.numberpay
+        
+       })
+       console.log(payBuy);
+       
+       const newpay = await payBuy.save();
+
         for (const item of products) {
             const product = await Product.findById(item.product);
 
             product.stock -= item.quantity;
-console.log(product.stock);
 
             await Product.findByIdAndUpdate(product._id, product, { new: true });
 
@@ -114,7 +115,8 @@ console.log(product.stock);
         const buy = new Buy({
             ...data,
             user : req.usuario._id,
-            products
+             pay:newpay._id,
+             products
         });
 
         await buy.save();
@@ -122,13 +124,12 @@ console.log(product.stock);
        .populate("user", "name")
        .populate("client", "dni name phone address")
        .populate("products.product", "name description price ")
-
+       .populate("pay", "numberpay amountpay date ")
         res.status(201).json(newbuy);
 
 
     } catch (error) {
-       // await session.abortTransaction();
-       // session.endSession();
+      
         return res.status(400).json({
             msg: error.message
         });
@@ -187,11 +188,12 @@ const getBuyHistory = async (req, res = response) => {
 };
 
 module.exports = {
-    buyProduct,
     getBuys,
     getBuyById,
     createBuy,
     updateBuy,
     deleteBuy,
-    getBuyHistory // Añadido el historial de compras
+    getBuyHistory,
+    getBuyByUser,
+    getBuyByClient
 };

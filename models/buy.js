@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 const client = require('./client');
+const pay = require('./pay');
 
 const BuySchema = Schema({
     //numero del pedido
@@ -26,6 +27,10 @@ const BuySchema = Schema({
     client: {
         type: Schema.Types.ObjectId,
         ref: 'Client', 
+    },
+    pay: {
+        type: Schema.Types.ObjectId,
+        ref: 'Pay', 
     },
     products: [
         {
