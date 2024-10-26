@@ -61,7 +61,16 @@ const validateProducts = async (products) => {
 
 
 }
-
+const colletionExists = ( colletion = '', colletions = []) => {
+    const incluided = colletions.includes ( colletion );
+  
+    if ( !incluided ) { 
+      throw new Error(`La Coleccion ${ colletion } no es permitida, solo se permiten ${ colletions }`);
+      
+    }
+  
+    return true;
+  }
 
 
 
@@ -73,5 +82,6 @@ module.exports = {
     existCategoryById,
     existProductById,
     existUserById,
-    validateProducts
+    validateProducts,
+    colletionExists
 };

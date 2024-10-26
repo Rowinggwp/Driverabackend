@@ -16,7 +16,8 @@ class Server {
             buy: '/api/buy',          // Ruta para la API de Buy (Compras)
             categories: '/api/categories',  // Ruta para la API de Category
             user: '/api/user',
-            client: '/api/client'
+            client: '/api/client',
+            uploads:    '/api/uploads',
         };
        
         // Conectar a la base de datos
@@ -59,6 +60,8 @@ class Server {
         this.app.use(this.paths.user, require('../routes/user'));          // Usuarios
         this.app.use(this.paths.client, require('../routes/client'));      // Clientes
         this.app.use(this.paths.auth, require('../routes/auth'));          // Autenticación
+        this.app.use(this.paths.uploads , require('../routes/upload'));
+
     }
 
     listen() {

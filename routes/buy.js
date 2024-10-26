@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
-const { buyProduct, getBuyHistory, getBuys, getBuyById, createBuy, updateBuy, deleteBuy, getBuyByUser, getBuyByClient } = require("../controllers/buy");
+const { getBuyHistory, getBuys, getBuyById, createBuy, updateBuy, deleteBuy, getBuyByUser, getBuyByClient } = require("../controllers/buy");
 const { validateFields } = require("../middlewares/validate-fields");
 const { existBuyById, existClientById, validateProducts } = require("../helpers/db-validators");
 const { validateJWT } = require("../middlewares/validate-jwt");
