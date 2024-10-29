@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const fileUpload = require('express-fileupload'); // Importamos express-fileupload
+const path = require('path'); // Importar path para servir archivos estáticos
 const { dbConnection } = require('../database/config');
 
 class Server {
@@ -17,7 +18,7 @@ class Server {
             categories: '/api/categories',  // Ruta para la API de Category
             user: '/api/user',
             client: '/api/client',
-            uploads:    '/api/uploads',
+            uploads: '/api/uploads', // Ruta para la API de subida de archivos
         };
        
         // Conectar a la base de datos
@@ -48,6 +49,9 @@ class Server {
             createParentPath: true  // Crea directorios padres si no existen
         }));
 
+        // Servir archivos estáticos desde la carpeta uploads
+        this.app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
         // Servir directorio público, opcional si manejas archivos estáticos
         this.app.use(express.static('public'));
     }
@@ -60,8 +64,7 @@ class Server {
         this.app.use(this.paths.user, require('../routes/user'));          // Usuarios
         this.app.use(this.paths.client, require('../routes/client'));      // Clientes
         this.app.use(this.paths.auth, require('../routes/auth'));          // Autenticación
-        this.app.use(this.paths.uploads , require('../routes/upload'));
-
+        this.app.use(this.paths.uploads, require('../routes/upload'));     // Subida de archivos
     }
 
     listen() {

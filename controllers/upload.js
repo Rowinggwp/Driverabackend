@@ -128,6 +128,7 @@ const showImage = async ( req , res= response ) => {
             const pathImage = path.join( __dirname, '../uploads', colletion, model.images );
               //validar si existe en archivo del filesystem
             if (fs.existsSync( pathImage )){
+                console.log(pathImage)
                 return res.sendFile( pathImage );   // elimina el archivo de la ruta             
             }           
             
