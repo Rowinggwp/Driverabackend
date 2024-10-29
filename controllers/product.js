@@ -77,8 +77,8 @@ const createProduct = async (req, res = response) => {
       // subir Archivo
       const nameFile = await uploadsFiles ( req.files, undefined, 'products', product._id );
       product.images = nameFile;  
-
-     await Product.findByIdAndUpdate(product._id, product.images, { new: true });
+      
+     await Product.findByIdAndUpdate(product._id, product, { new: true });
 
     res.status(201).json(product);
 };
