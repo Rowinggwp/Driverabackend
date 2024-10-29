@@ -54,6 +54,7 @@ class Server {
 
         // Servir directorio público, opcional si manejas archivos estáticos
         this.app.use(express.static('public'));
+        this.app.use(express.static('uploads'));
     }
 
     routes() {
