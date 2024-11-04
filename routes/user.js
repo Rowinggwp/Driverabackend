@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { getUsers, createUser, updateUser, deleteUser, getUserById } = require('../controllers/user');
+const { getUsers, createUser, updateUser, deleteUser, getUserById, getUserByToken } = require('../controllers/user');
 const { validateFields } = require('../middlewares/validate-fields');
 const { existUserById } = require('../helpers/db-validators');
 const { validateJWT } = require('../middlewares/validate-jwt');
@@ -8,6 +8,17 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 const router = Router();
 
 router.get('/', getUsers);
+
+router.get('/byuser', [ 
+    validateJWT,
+    validateFields,
+ ] , getUserByToken);
+
+
+
+
+
+
 
 router.get('/:id', [
     check('id', 'El ID no es válido').isMongoId(),

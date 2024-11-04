@@ -18,6 +18,18 @@ const getUsers = async (req, res = response) => {
     });
 };
 
+const getUserByToken = async (req, res = response) => {
+    const  user  = req.usuario;
+
+    if (!user || !user.state) {
+        return res.status(404).json({
+            msg: 'Usuario no encontrado'
+        });
+    }
+
+    res.json(user);
+};
+
 // Crear usuario
 const createUser = async (req, res = response) => {
     const { name, email, password, role } = req.body;
@@ -81,5 +93,6 @@ module.exports = {
     createUser,
     updateUser,
     deleteUser,
-    getUserById
+    getUserById,
+    getUserByToken,
 };
