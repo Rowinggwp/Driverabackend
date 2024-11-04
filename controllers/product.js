@@ -4,6 +4,26 @@ const fs = require('fs');
 
 const Product = require("../models/product");
 const { uploadsFiles } = require("../helpers/upload-files");
+const category = require("../models/category");
+
+const getProductByCategory = async (req, res = response) => {
+    const { limit = 25, desde = 0 } = req.query;
+    const { id } = req.params;
+    const query = { $and : [{state: true}, {category : id}] };
+
+    const [total, products] = await Promise.all([
+        Product.countDocuments(query),
+        Product.find(query)
+            .populate("category","name")       
+            .skip(Number(desde))
+            .limit(Number(limit))
+    ]);
+
+    res.json({
+    total,
+    products    
+    });
+};
 
 
 // Obtener productos - paginado - total - Populate
@@ -142,5 +162,5 @@ module.exports = {
     getProductByID,
     updateProduct,
     deleteProduct,
-    
+    getProductByCategory,
 };
