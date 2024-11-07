@@ -14,9 +14,6 @@ const { validateFields } = require('../middlewares/validate-fields');
 const { validateFilesUpload } = require('../middlewares/validate-files-upload');
 const { validateJWT } = require('../middlewares/validate-jwt');
 
-
-
-
 const router = Router();
 
 router.get('/:colletion/:id', [  
@@ -34,7 +31,6 @@ router.put('/:colletion/:id', [
   check('colletion').custom( c => colletionExists ( c, ['users', 'products'] ) ),
   validateFields  
 ], updateImgs );
-//], updateImgs);
 
 
 module.exports = router;

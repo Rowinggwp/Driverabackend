@@ -19,9 +19,9 @@ const getClients = async (req, res = response) => {
 
 // Crear cliente
 const createClient = async (req, res = response) => {
-    const { dni, name, email, phone } = req.body;
+    const { user, state, ...data } = req.body;
 
-    const client = new Client({ dni, name, email, phone });
+    const client = new Client ( data );
     await client.save();
 
     res.status(201).json(client);

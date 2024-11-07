@@ -14,12 +14,6 @@ router.get('/byuser', [
     validateFields,
  ] , getUserByToken);
 
-
-
-
-
-
-
 router.get('/:id', [
     check('id', 'El ID no es válido').isMongoId(),
     check('id').custom(existUserById),

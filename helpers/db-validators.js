@@ -3,7 +3,22 @@ const Client = require('../models/client');
 const Category = require('../models/category');
 const Product = require('../models/product');
 const User = require('../models/user');
-const product = require('../models/product');
+
+// Validar si el nombre de la categoría es único
+const categoryNameUnique = async (name = '') => {
+    const categoryExists = await Category.findOne({ name });
+    if (categoryExists) {
+        throw new Error(`La categoría con el nombre "${name}" ya existe`);
+    }
+};
+
+// Validar si el email de un cliente es único
+const isEmailUnique = async (email = '') => {
+    const client = await Client.findOne({ email });
+    if (client) {
+        throw new Error(`El correo electrónico ${email} ya está registrado`);
+    }
+};
 
 // Validar si el ID de Buy existe
 const existBuyById = async (id) => {
@@ -45,6 +60,7 @@ const existUserById = async (id) => {
     }
 };
 
+// Validar que los productos sean válidos y haya suficiente stock
 const validateProducts = async (products) => {
     for (const item of products) {
         const product = await Product.findById(item.product);
@@ -53,28 +69,22 @@ const validateProducts = async (products) => {
             throw new Error(`El producto con el ID ${item.product} no existe`);
         }
 
-       if (product.stock < item.quantity) {
+        if (product.stock < item.quantity) {
             throw new Error(`Stock insuficiente para el producto ${product.name}`);
         }
+    }
+};
 
+// Validar si la colección existe y es válida
+const colletionExists = (collection = '', collections = []) => {
+    const included = collections.includes(collection);
+
+    if (!included) {
+        throw new Error(`La colección ${collection} no es permitida, solo se permiten ${collections}`);
     }
 
-
-}
-const colletionExists = ( colletion = '', colletions = []) => {
-    const incluided = colletions.includes ( colletion );
-  
-    if ( !incluided ) { 
-      throw new Error(`La Coleccion ${ colletion } no es permitida, solo se permiten ${ colletions }`);
-      
-    }
-  
     return true;
-  }
-
-
-
-
+};
 
 module.exports = {
     existBuyById,
@@ -83,5 +93,7 @@ module.exports = {
     existProductById,
     existUserById,
     validateProducts,
-    colletionExists
+    colletionExists,
+    categoryNameUnique,
+    isEmailUnique 
 };
