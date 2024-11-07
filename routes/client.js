@@ -22,7 +22,6 @@ router.get('/:id', [
 ], getClientById);
 
 router.post('/', [
-    validateJWT,
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     check('email', 'El email no es válido').isEmail(),
     check('email').custom(isEmailUnique), 

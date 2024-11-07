@@ -3,10 +3,6 @@ const client = require('./client');
 const pay = require('./pay');
 
 const BuySchema = Schema({
-    //numero del pedido
-    numberBuy: {
-        type: Number
-    },
     total: {
         type: Number,
         required: true,
