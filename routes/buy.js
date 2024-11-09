@@ -26,8 +26,8 @@ router.post('/', [
     check('client', 'No es un id valido ').isMongoId(),
     check('client').custom(existClientById),
     check('products', 'Los productos son obligatorios').isArray({ min: 1 }),
-    check('products.*.id', 'El ID del producto no es válido').isMongoId(),
-    check('products.*.quantity', 'La cantidad debe ser un número entero positivo').isInt({ gt: 0 }),
+    //check('products.*.id', 'El ID del producto no es válido').isMongoId(),
+    //check('products.*.quantity', 'La cantidad debe ser un número entero positivo').isInt({ gt: 0 }),
     check('products').custom(validateProducts),
     validateFields
 ], createBuy);

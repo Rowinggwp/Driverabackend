@@ -3,6 +3,7 @@ const Buy = require("../models/buy");
 const Product = require("../models/product");
 const mongoose = require("mongoose");
 const Pay = require("../models/pay");
+const { v4: uuidv4 } = require ('uuid')
 
 // Obtener todas las compras - paginado - total
 const getBuys = async (req, res = response) => {
@@ -90,16 +91,16 @@ const getBuyById = async (req, res = response) => {
 // Crear una nueva compra
 const createBuy = async (req, res = response) => {
     const { products,pay, ...data } = req.body;
-console.log(pay);
+const numberpay = uuidv4
 
     try {
 
        const payBuy = new Pay ({
-        amountpay : pay.amountpay,
-        numberpay : pay.numberpay
+        numberpay,
+        amountpay : data.total,
+        
         
        })
-       console.log(payBuy);
        
        const newpay = await payBuy.save();
 
