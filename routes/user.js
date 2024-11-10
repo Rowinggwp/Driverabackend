@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { check } = require('express-validator');
 const { getUsers, createUser, updateUser, deleteUser, getUserById, getUserByToken } = require('../controllers/user');
 const { validateFields } = require('../middlewares/validate-fields');
-const { existUserById } = require('../helpers/db-validators');
+const { existUserById, isEmailUnique } = require('../helpers/db-validators');
 const { validateJWT } = require('../middlewares/validate-jwt');
 
 const router = Router();
@@ -23,6 +23,7 @@ router.get('/:id', [
 router.post('/', [
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     check('email', 'El correo no es válido').isEmail(),
+    check('email').custom(isEmailUnique), 
     check('password', 'La contraseña debe ser de al menos 6 caracteres').isLength({ min: 6 }),
     validateFields
 ], createUser);
