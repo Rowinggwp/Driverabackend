@@ -17,15 +17,39 @@ const getClients = async (req, res = response) => {
     });
 };
 
-// Crear cliente
 const createClient = async (req, res = response) => {
-    const { user, state, ...data } = req.body;
+    const { dni, name, email, ...data } = req.body;
 
-    const client = new Client ( data );
+    // Buscar si ya existe un cliente con el mismo DNI, nombre y email
+    const existingClient = await Client.findOne({ dni, name, email });
+
+    if (existingClient) {
+        const updatedData = { dni, name, email, ...data };
+
+        // Reemplazar completamente el documento existente
+        const updatedClient = await Client.findByIdAndUpdate(
+            existingClient._id,
+            updatedData,
+            { new: true }
+        );
+
+        return res.status(200).json({
+            msg: 'Cliente actualizado y reemplazado',
+            client: updatedClient
+        });
+    }
+
+    // Si no existe, creamos un nuevo cliente
+    const client = new Client({ dni, name, email, ...data });
     await client.save();
 
-    res.status(201).json(client);
+    res.status(201).json({
+        msg: 'Cliente creado',
+        client
+    });
 };
+
+
 
 // Actualizar cliente
 const updateClient = async (req = request, res = response) => {

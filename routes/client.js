@@ -24,7 +24,7 @@ router.get('/:id', [
 router.post('/', [
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     check('email', 'El email no es válido').isEmail(),
-    check('email').custom(isEmailUnique), 
+// check('email').custom(isEmailUnique), 
     check('phone', 'El teléfono debe ser un número válido').matches(/^[0-9]{10}$/), 
     validateFields
 ], createClient);
