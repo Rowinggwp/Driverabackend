@@ -34,13 +34,13 @@ router.post('/', [
         }
         return true;
     }),
-    check('stock', 'El stock debe ser un número válido').isNumeric(),
-    check('stock').custom(value => {
-        if (value < 0) {
-            throw new Error('El stock no puede ser negativo');
-        }
-        return true;
-    }),
+    // check('stock', 'El stock debe ser un número válido').isNumeric(),
+   // check('stock').custom(value => {
+      //  if (value < 0) {
+       //     throw new Error('El stock no puede ser negativo');
+       // }
+      //  return true;
+   // }),
     check('category', 'El ID de la categoría no es válido').isMongoId(),
     check('category').custom(existCategoryById), 
     validateFilesUpload,  
@@ -60,13 +60,13 @@ router.put('/:id', [
         }
         return true;
     }),
-    check('stock', 'El stock debe ser un número válido').isNumeric(),
-    check('stock').custom(value => {
-        if (value < 0) {
-            throw new Error('El stock no puede ser negativo');
-        }
-        return true;
-    }),
+    // check('stock', 'El stock debe ser un número válido').isNumeric(),
+   // check('stock').custom(value => {
+      //  if (value < 0) {
+       //     throw new Error('El stock no puede ser negativo');
+       // }
+      //  return true;
+   // }),
     check('category', 'El ID de la categoría no es válido').isMongoId(),
     check('category').custom(existCategoryById), 
     validateFields

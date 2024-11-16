@@ -29,9 +29,8 @@ const ProductSchema = Schema({
     },
     stock: {
         type: Number,
-        required: [true, 'El stock es obligatorio'],
         default: 0,
-        min: [0, 'El stock no puede ser negativo']
+        // min: [0, 'El stock no puede ser negativo']
     },
     images: {
         type: String,  // Permite manejar múltiples imágenes    
