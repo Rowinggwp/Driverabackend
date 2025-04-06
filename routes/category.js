@@ -11,14 +11,14 @@ const router = Router();
 router.get('/', getCategories);
 
 router.get('/:id', [
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existCategoryById),
     validateFields
 ], getCategoryById);
 
 router.post('/', [
     validateJWT,
-    isAdminRole, 
+    isAdminRole,
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     check('name').custom(categoryNameUnique), 
     validateFields
@@ -27,7 +27,7 @@ router.post('/', [
 router.put('/:id', [
     validateJWT,
     isAdminRole, 
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existCategoryById),
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     validateFields
@@ -36,7 +36,7 @@ router.put('/:id', [
 router.delete('/:id', [
     validateJWT,
     isAdminRole, 
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existCategoryById),
     validateFields
 ], deleteCategory);

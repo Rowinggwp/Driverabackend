@@ -15,7 +15,7 @@ router.get('/byuser/:id', getBuyByUser);
 router.get('/byclient/:id', getBuyByClient);
 
 router.get('/:id', [
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existBuyById),
     validateFields
 ], getBuyById);
@@ -23,7 +23,7 @@ router.get('/:id', [
 router.post('/', [
     validateJWT, 
     check('total', 'El total es obligatorio y debe ser un número positivo').isFloat({ gt: 0 }),
-    check('client', 'No es un id valido ').isMongoId(),
+    check('client', 'No es un id valido ').isNumeric(),
     check('client').custom(existClientById),
     check('products', 'Los productos son obligatorios').isArray({ min: 1 }),
     //check('products.*.id', 'El ID del producto no es válido').isMongoId(),
@@ -35,7 +35,7 @@ router.post('/', [
 router.put('/:id', [
     validateJWT,
     isAdminRole,
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existBuyById),
     validateFields
 ], updateBuy);
@@ -43,7 +43,7 @@ router.put('/:id', [
 router.delete('/:id', [
     validateJWT,
     isAdminRole, 
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existBuyById),
     validateFields
 ], deleteBuy);

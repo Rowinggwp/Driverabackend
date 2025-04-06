@@ -12,13 +12,13 @@ const router = Router();
 router.get('/', getProducts);
 
 router.get('/category/:id', [
-    check('id', 'El ID de la categoría no es válido').isMongoId(),
+    check('id', 'El ID de la categoría no es válido').isNumeric(),
     check('id').custom(existCategoryById), 
     validateFields
 ], getProductByCategory);
 
 router.get('/:id', [
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existProductById),
     validateFields
 ], getProductByID);
@@ -41,7 +41,7 @@ router.post('/', [
        // }
       //  return true;
    // }),
-    check('category', 'El ID de la categoría no es válido').isMongoId(),
+    check('category', 'El ID de la categoría no es válido').isNumeric(),
     check('category').custom(existCategoryById), 
     //validateFilesUpload,  
     //validateFields
@@ -50,7 +50,7 @@ router.post('/', [
 router.put('/:id', [
     validateJWT,
     isAdminRole,
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existProductById), 
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     check('price', 'El precio debe ser un número válido').isNumeric(),
@@ -67,7 +67,7 @@ router.put('/:id', [
        // }
       //  return true;
    // }),
-    check('category', 'El ID de la categoría no es válido').isMongoId(),
+    check('category', 'El ID de la categoría no es válido').isNumeric(),
     check('category').custom(existCategoryById), 
     validateFields
 ], updateProduct);
@@ -75,7 +75,7 @@ router.put('/:id', [
 router.delete('/:id', [
     validateJWT,
     isAdminRole,
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existProductById),
     validateFields
 ], deleteProduct);
