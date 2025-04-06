@@ -34,8 +34,8 @@ class Server {
         this.routes();
     }
 
-    async conectarDB() {
-        await dbConnection();
+    conectarDB() {
+         dbConnection();
     }
 
     middlewares() {

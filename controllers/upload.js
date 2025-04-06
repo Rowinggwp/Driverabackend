@@ -7,152 +7,104 @@ const { uploadsFiles } = require('../helpers/upload-files');
 const { log } = require('console');
 
 
-const uploadFiles = async (req, res= response) => {
-
+const uploadFiles = async (req, res = response) => {
     try {
-        //const nameFile = await uploadsFiles(req.files, ['txt', 'md'], 'textos');
         const nameFile = await uploadsFiles(req.files, undefined, 'imgs');
-
-        res.json({
-           nameFile
-        });
-        
+        res.json({ nameFile });
     } catch (msg) {
-        res.status(400).json({ msg });        
+        res.status(400).json({ msg });
     }
-   
-}
+};
 
-
-const updateImgs = async ( req, res= response ) => {
-
+const updateImgs = async (req, res = response) => {
     const { id, colletion } = req.params;
 
-    let model;
-
     try {
-
-        switch ( colletion ) {
+        let model;
+        switch (colletion) {
             case 'users':
-                model = await User.findById ( id );
-                if ( !model ){
-                    return res.status(400).json ({
-                        msg: `No existe un usuario con el Id ${ id }`
-                    });
+                model = await User.findByPk(id);
+                if (!model) {
+                    return res.status(400).json({ msg: `No existe un usuario con el Id ${id}` });
                 }
                 break;
-    
+
             case 'products':
-                model = await Product.findById ( id );
-                if ( !model ){
-                    return res.status(400).json ({
-                        msg: `No existe un producto con el Id ${ id }`
-                    });
+                model = await Product.findByPk(id);
+                if (!model) {
+                    return res.status(400).json({ msg: `No existe un producto con el Id ${id}` });
                 }
-                model.user = req.usuario._id;
-                
-            break;
-        
+                // Asignar usuario relacionado
+                model.userId = req.usuario.id;
+                await model.save();
+                break;
+
             default:
-                return res.status(500).json ({ msg: 'Se me olvido validar eso'});
-            
+                return res.status(500).json({ msg: 'Se me olvido validar eso' });
         }
 
-        // limpiar imagen previas
-        if ( model.images ) {
-            // borrar la imagen del servidor
-            const pathImage = path.join( __dirname, '../uploads', colletion, model.images );
-            //validar si existe en archivo del filesystem
-            if (fs.existsSync( pathImage )){
-                fs.unlinkSync( pathImage );   // elimina el archivo de la ruta             
+        // Limpiar imagen previa
+        if (model.images) {
+            const pathImage = path.join(__dirname, '../uploads', colletion, model.images);
+            if (fs.existsSync(pathImage)) {
+                fs.unlinkSync(pathImage);
             }
         }
-       
-        
 
-        // subir Archivo
-        const nameFile = await uploadsFiles ( req.files, undefined, colletion, model._id );
-        model.images = nameFile;    
-    
-        await model.save();
-    
-        res.json({
-            model
-        })
-        
+        // Subir nuevo archivo
+        const nameFile = await uploadsFiles(req.files, undefined, colletion, model.id);
+        await model.update({ images: nameFile });
+
+        res.json({ model });
+
     } catch (msg) {
-        res.status(400).json({ msg }); 
+        res.status(400).json({ msg });
     }
-   
-}
+};
 
-
-const showImage = async ( req , res= response ) => {
-    
+const showImage = async (req, res = response) => {
     const { id, colletion } = req.params;
-    
-    let model;
 
     try {
-
-        switch ( colletion ) {
+        let model;
+        switch (colletion) {
             case 'users':
-                model = await User.findById ( id );
-                if ( !model ){
-                    return res.status(400).json ({
-                        msg: `No existe un usuario con el Id ${ id }`
-                    });
-                }
+                model = await User.findByPk(id);
                 break;
-    
+
             case 'products':
-                model = await Product.findById ( id );
-                if ( !model ){
-                    return res.status(400).json ({
-                        msg: `No existe un producto con el Id ${ id }`
-                    });
-                }
-               
-                
-            break;
-        
+                model = await Product.findByPk(id);
+                break;
+
             default:
-                return res.status(500).json ({ msg: 'Se me olvido validar eso'});
-            
+                return res.status(500).json({ msg: 'Se me olvido validar eso' });
         }
 
-        // limpiar imagen previas
-        if ( model.images ) {
-            // borrar la imagen del servidor
-
-           
-            const pathImage = path.join( __dirname, '../uploads', colletion, model.images );
-              //validar si existe en archivo del filesystem
-            if (fs.existsSync( pathImage )){
-                return res.sendFile( pathImage );   // elimina el archivo de la ruta             
-            }           
-            
-        }
-        
-        //cargar imagen por default
-        const pathImage = path.join( __dirname, '../assets/no-image.jpg' );
-            //validar si existe en archivo del filesystem
-        if (fs.existsSync( pathImage )){
-            return res.sendFile( pathImage );   // elimina el archivo de la ruta             
-        }else{
-            res.json({
-                msg: 'Falta Placeholder'
-            });
+        if (!model) {
+            return res.status(404).json({ msg: 'Registro no encontrado' });
         }
 
-       
-        
+        // Mostrar imagen si existe
+        if (model.images) {
+            const pathImage = path.join(__dirname, '../uploads', colletion, model.images);
+            if (fs.existsSync(pathImage)) {
+                return res.sendFile(pathImage);
+            }
+        }
+
+        // Imagen por defecto
+        const defaultImage = path.join(__dirname, '../assets/no-image.jpg');
+        if (fs.existsSync(defaultImage)) {
+            return res.sendFile(defaultImage);
+        }
+
+        res.json({ msg: 'Falta Placeholder' });
+
     } catch (msg) {
-        console.log(msg);        
-        res.status(400).json({ msg }); 
+        console.log(msg);
+        res.status(400).json({ msg });
     }
-   
-}
+};
 
 module.exports = {
     uploadFiles,

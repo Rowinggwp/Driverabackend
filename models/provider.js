@@ -1,48 +1,90 @@
-const { Schema, model } = require('mongoose');
-const product = require('./product');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/config');
 
-const ProviderSchema = Schema({
-    name: {
-        type: String,
-        required: [true, 'El nombre es obligatorio'],
-        unique: true
-    },
-    company: {
-        type: String,
-        required: [true, 'El nombre de la empresa es obligatorio']
-    },
-    contact: {
-        type: String,
-        required: [true, 'El contacto es obligatorio']
-    },
-    email: {
-        type: String,
-        required: [true, 'El correo es obligatorio'],
-        unique: true,
-    },
-    phone: {
-        type: String,
-        required: [true, 'El teléfono es obligatorio']
-    },
-    productexport:{
-        type: String,
-        required: [true, 'debe cologar el producto exportado']
-    },
-    address: {
-        type: String,
-        default: ''
-    },
-    state: {
-        type: Boolean,
-        default: true,
-        required: true
+const Provider = sequelize.define('provider', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notNull: { msg: 'El nombre es obligatorio' },
+      notEmpty: { msg: 'El nombre no puede estar vacío' }
     }
+  },
+  company: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El nombre de la empresa es obligatorio' },
+      notEmpty: { msg: 'La empresa no puede estar vacía' }
+    }
+  },
+  contact: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El contacto es obligatorio' },
+      notEmpty: { msg: 'El contacto no puede estar vacío' }
+    }
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notNull: { msg: 'El correo es obligatorio' },
+      isEmail: { msg: 'Formato de correo inválido' }
+    }
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El teléfono es obligatorio' },
+      notEmpty: { msg: 'El teléfono no puede estar vacío' }
+    }
+  },
+  productexport: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'Debe colocar el producto exportado' },
+      notEmpty: { msg: 'El producto exportado no puede estar vacío' }
+    }
+  },
+  address: {
+    type: DataTypes.STRING,
+    defaultValue: ''
+  },
+  state: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    allowNull: false
+  }
+}, {
+  timestamps: true,
+  getterMethods: {
+    toJSON() {
+      const values = { ...this.dataValues };
+      // Sequelize no tiene __v, pero mantenemos la estructura original
+      delete values.createdAt;
+      delete values.updatedAt;
+      return values;
+    }
+  }
 });
 
-// Remover __v al devolver como JSON
-ProviderSchema.methods.toJSON = function () {
-    const { __v, ...providerObject } = this.toObject();
-    return providerObject;
-}
+Provider.sync({ force: false })
+  .then(() => {
+    console.log('Tabla de Provedores creada correctamente.');
+  })
+  .catch(err => {
+    console.error('Error al crear la tabla de Provedores:', err);
+  });
 
-module.exports = model('Provider', ProviderSchema);
+module.exports = Provider;

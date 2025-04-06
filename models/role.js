@@ -1,10 +1,32 @@
-const { Schema, model } = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/config');
 
-const RoleSchema = Schema({ 
-    role: {
-        type: String,
-        required: [true, 'El rol es obligatorio']
+const Role = sequelize.define('role', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El rol es obligatorio' },
+      notEmpty: { msg: 'El rol no puede estar vacío' }
     }
+  }
+}, {
+  timestamps: true, // Crea automáticamente createdAt y updatedAt
 });
 
-module.exports = model('Role', RoleSchema);
+
+Role.sync({ force: false })
+.then(() => {
+  console.log('Tabla de Roles creada correctamente.');
+})
+.catch(err => {
+  console.error('Error al crear la tabla de Roles:', err);
+});
+
+
+module.exports = Role;

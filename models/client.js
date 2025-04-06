@@ -1,40 +1,78 @@
-const { Schema, model } = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/config');
 
-const ClientSchema = Schema({ 
-    dni: {//documento de idenctidad
-        type: String,
-        required: [true, 'El documento de identidad es obligatorio'],
-        unique: true
-    },
-    name: {
-        type: String,
-        required: [true, 'El nombre es obligatorio'],
-    },
-    email: {
-        type: String,
-        required: [true, 'El correo es obligatorio'],
-    },
-    state: {
-        type: Boolean,
-        default: true
-    },    
-    phone: {
-        type: String,
-        required: [true, 'El Numero es necesario'],
-    },
-    address:{
-        type: String,
-        required: [true, 'la direccion es obligatoria']
+const Client = sequelize.define('client', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  dni: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notNull: { msg: 'El documento de identidad es obligatorio' },
+      notEmpty: { msg: 'El DNI no puede estar vacío' }
     }
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El nombre es obligatorio' },
+      notEmpty: { msg: 'El nombre no puede estar vacío' }
+    }
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El correo es obligatorio' },
+      isEmail: { msg: 'Formato de correo inválido' }
+    }
+  },
+  state: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El número es necesario' },
+      notEmpty: { msg: 'El teléfono no puede estar vacío' }
+    }
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'La dirección es obligatoria' },
+      notEmpty: { msg: 'La dirección no puede estar vacía' }
+    }
+  }
+}, {
+  timestamps: true,
+  getterMethods: {
+    toJSON() {
+      const values = { ...this.dataValues };
+      // Eliminamos campos técnicos y renombramos ID
+      delete values.createdAt;
+      delete values.updatedAt;
+      values.uid = values.id;
+      delete values.id;
+      return values;
+    }
+  }
 });
 
+Client.sync({ force: false })
+  .then(() => {
+    console.log('Tabla de Clientes creada correctamente.');
+  })
+  .catch(err => {
+    console.error('Error al crear la tabla de Clientes:', err);
+  });
 
-
-ClientSchema.methods.toJSON = function () {    
-    const { __v, password, _id, ...userObject} = this.toObject();
-    userObject.uid = _id;
-    return userObject;
-}
-
-
-module.exports = model('Client', ClientSchema);
+module.exports = Client;

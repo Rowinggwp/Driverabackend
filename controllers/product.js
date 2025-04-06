@@ -1,160 +1,165 @@
 const { response, request } = require("express");
 const path = require('path'); 
 const fs = require('fs');
-
 const Product = require("../models/product");
 const { uploadsFiles } = require("../helpers/upload-files");
-const category = require("../models/category");
+const { Result } = require("express-validator");
+const { dbConnection } = require("../database/config");
+const Category = require("../models/category");
+const User = require("../models/user");
 
-const getProductByCategory = async (req, res = response) => {
-    const { limit = 25, desde = 0 } = req.query;
-    const { id } = req.params;
-    const query = { $and : [{state: true}, {category : id}] };
-
-    const [total, products] = await Promise.all([
-        Product.countDocuments(query),
-        Product.find(query)
-            .populate("category","name")       
-            .skip(Number(desde))
-            .limit(Number(limit))
-    ]);
-    res.json({
-    total,
-    products    
-    });
-};
-
-
-// Obtener productos - paginado - total - Populate
-const getProducts = async (req, res = response) => {
-    const { limit = 25, desde = 0 } = req.query;
-    const query = { state: true };
-
-    const [total, products] = await Promise.all([
-        Product.countDocuments(query),
-        Product.find(query)
-            .populate("user", "name")
-            .populate("category", "name")
-            .skip(Number(desde))
-            .limit(Number(limit)),
-    ]);
-
-    res.json({
-        total,
-        products,
-    });
-};
-
-// Obtener Producto por ID: populate
-const getProductByID = async (req, res = response) => {
+const getProductByCategory = async (req, res) => {
+    const { limit = 25, desde = 0 } = req.params;
     const { id } = req.params;
 
-    const product = await Product.findById(id)
-            .populate("user", "name")
-            .populate("category", "name");
-    
-
-
-   
-    if (!product.state) {
-        res.status(400).json({
-            msg: 'El producto se encuentra desactivado',
+    try {
+        const { count, rows: products } = await Product.findAndCountAll({
+            where: { 
+                state: true,
+                categoryId: id 
+            },
+            include: [{ 
+                model: Category,
+                attributes: ['name'],
+                required: true
+            }],
+            offset: Number(desde),
+            limit: Number(limit)
         });
-    }
 
-    res.json(product);
-};
-
-// Crear Producto con validación de archivo
-const createProduct = async (req, res = response) => {
-  
-
-    const { state, user, ...body } = req.body;
-
-    body.name = body.name.toUpperCase();
-
-    const existProduct = await Product.findOne({ name: body.name });
-
-    if (existProduct) {
-        return res.status(400).json({
-            msg: `El producto ${existProduct.name}, ya existe`,
-        });
-    }
-      
-
-    const data = {
-        ...body,
-        user: req.usuario._id,
-    };
-
-    const product = new Product(data);
-
-    await product.save();
-
-
-
-      // subir Archivo
-      const nameFile = await uploadsFiles ( req.files, undefined, 'products', product._id );
-      product.images = nameFile;  
-      
-     await Product.findByIdAndUpdate(product._id, product, { new: true });
-
-    res.status(201).json(product);
-};
-
-
-
-
-// Actualizar Producto
-const updateProduct = async (req, res = response) => {
-    const { id } = req.params;
-    const { state, user, ...dataProduct } = req.body;
-   
-
-// actualizar imagen
-  // limpiar imagen previas
-
-    if (req.files)  {
-        if ( Object.keys(req.files).length >= 0 && req.files.uploadFile) {
-            const productExist = await Product.findById(id);
+        res.json({ total: count, products });
         
-            if ( productExist.images ) {
-                // borrar la imagen del servidor
-                const pathImage = path.join( __dirname, '../uploads', 'products', productExist.images );
-                //validar si existe en archivo del filesystem
-                if (fs.existsSync( pathImage )){
-                    fs.unlinkSync( pathImage );   // elimina el archivo de la ruta             
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al obtener productos' });
+    }
+};
+
+const getProducts = async (req, res) => {
+    const { limit = 25, desde = 0 } = req.query;
+
+    try {
+        const { count, rows: products } = await Product.findAndCountAll({
+            where: { state: true },
+            include: [
+                { model: User, attributes: ['name'] },
+                { model: Category, attributes: ['name'] }
+            ],
+            offset: Number(desde),
+            limit: Number(limit)
+        });
+
+        res.json({ total: count, products });
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al obtener productos' });
+    }
+};
+
+const getProductByID = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const product = await Product.findByPk(id, {
+            include: [
+                { model: User, attributes: ['name'] },
+                { model: Category, attributes: ['name'] }
+            ]
+        });
+
+        if (!product || !product.state) {
+            return res.status(400).json({ msg: 'Producto no encontrado o desactivado' });
+        }
+
+        res.json(product);
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al obtener producto' });
+    }
+};
+
+const createProduct = async (req, res) => {
+    const { state, ...body } = req.body;
+
+    try {
+        body.name = body.name.toUpperCase();
+        
+        const existProduct = await Product.findOne({ where: { name: body.name } });
+        if (existProduct) {
+            return res.status(400).json({ msg: `El producto ${body.name} ya existe` });
+        }
+
+        const productData = {
+            ...body,
+            userId: req.usuario.id
+        };
+
+        const product = await Product.create(productData);
+
+        // Subir archivo (mantén tu lógica actual)
+        if (req.files) {
+            const nameFile = await uploadsFiles(req.files, undefined, 'products', product.id);
+            await product.update({ images: nameFile });
+        }
+
+        res.status(201).json(product);
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al crear producto' });
+    }
+};
+
+const updateProduct = async (req, res) => {
+    const { id } = req.params;
+    const { state, ...dataProduct } = req.body;
+
+    try {
+        const product = await Product.findByPk(id);
+        if (!product) return res.status(404).json({ msg: 'Producto no encontrado' });
+
+        // Actualizar imagen
+        if (req.files) {
+            // Mantén tu lógica actual de manejo de archivos
+            if (product.images) {
+                const pathImage = path.join(__dirname, '../uploads', 'products', product.images);
+                if (fs.existsSync(pathImage)) {
+                    fs.unlinkSync(pathImage);
                 }
             }
-
-            // subir Archivo
-            const nameFile = await uploadsFiles ( req.files, undefined, 'products', productExist._id  );
-            dataProduct.images = nameFile
+            
+            const nameFile = await uploadsFiles(req.files, undefined, 'products', product.id);
+            dataProduct.images = nameFile;
         }
+
+        if (dataProduct.name) dataProduct.name = dataProduct.name.toUpperCase();
+
+        await product.update(dataProduct);
+        res.json(product);
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al actualizar producto' });
     }
-
-    if (dataProduct.name) {
-        dataProduct.name = dataProduct.name.toUpperCase(); 
-    }
-
-    const product = await Product.findByIdAndUpdate(id, dataProduct, { new: true });
-
-    res.json({
-        product,
-    });
 };
 
-// Desactivar o Borrar producto
-const deleteProduct = async (req, res = response) => {
+const deleteProduct = async (req, res) => {
     const { id } = req.params;
 
-    const product = await Product.findByIdAndUpdate(id, { state: false }, { new: true });
+    try {
+        const product = await Product.findByPk(id);
+        if (!product) return res.status(404).json({ msg: 'Producto no encontrado' });
 
-    res.json({
-        product,
-    });
+        await product.update({ state: false });
+        res.json({ msg: 'Producto desactivado correctamente' });
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Error al eliminar producto' });
+    }
 };
-
 module.exports = {
     createProduct,
     getProducts,

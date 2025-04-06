@@ -6,7 +6,7 @@ const User = require('../models/user');
 
 // Validar si el nombre de la categoría es único
 const categoryNameUnique = async (name = '') => {
-    const categoryExists = await Category.findOne({ name });
+    const categoryExists = await Category.findOne({ where: { name } });
     if (categoryExists) {
         throw new Error(`La categoría con el nombre "${name}" ya existe`);
     }
@@ -14,7 +14,7 @@ const categoryNameUnique = async (name = '') => {
 
 // Validar si el email de un cliente es único
 const isEmailUnique = async (email = '') => {
-    const client = await Client.findOne({ email });
+    const client = await Client.findOne({ where: { email } });
     if (client) {
         throw new Error(`El correo electrónico ${email} ya está registrado`);
     }
@@ -22,7 +22,7 @@ const isEmailUnique = async (email = '') => {
 
 // Validar si el ID de Buy existe
 const existBuyById = async (id) => {
-    const buy = await Buy.findById(id);
+    const buy = await Buy.findByPk(id);
     if (!buy) {
         throw new Error(`El ID ${id} de la compra no existe`);
     }
@@ -30,7 +30,7 @@ const existBuyById = async (id) => {
 
 // Validar si el ID de Client existe
 const existClientById = async (id) => {
-    const client = await Client.findById(id);
+    const client = await Client.findByPk(id);
     if (!client) {
         throw new Error(`El ID ${id} del cliente no existe`);
     }
@@ -38,7 +38,7 @@ const existClientById = async (id) => {
 
 // Validar si el ID de Category existe
 const existCategoryById = async (id) => {
-    const category = await Category.findById(id);
+    const category = await Category.findByPk(id);
     if (!category) {
         throw new Error(`El ID ${id} de la categoría no existe`);
     }
@@ -46,7 +46,7 @@ const existCategoryById = async (id) => {
 
 // Validar si el ID de Product existe
 const existProductById = async (id) => {
-    const product = await Product.findById(id);
+    const product = await Product.findByPk(id);
     if (!product) {
         throw new Error(`El ID ${id} del producto no existe`);
     }
@@ -54,7 +54,7 @@ const existProductById = async (id) => {
 
 // Validar si el ID de User existe
 const existUserById = async (id) => {
-    const user = await User.findById(id);
+    const user = await User.findByPk(id);
     if (!user) {
         throw new Error(`El ID ${id} del usuario no existe`);
     }
@@ -63,10 +63,10 @@ const existUserById = async (id) => {
 // Validar que los productos sean válidos y haya suficiente stock
 const validateProducts = async (products) => {
     for (const item of products) {
-        const product = await Product.findById(item.product);
-
+        const product = await Product.findByPk(item.productId); // Asume que se envía productId
+        
         if (!product) {
-            throw new Error(`El producto con el ID ${item.product} no existe`);
+            throw new Error(`El producto con el ID ${item.productId} no existe`);
         }
 
         if (product.stock < item.quantity) {
@@ -75,14 +75,12 @@ const validateProducts = async (products) => {
     }
 };
 
-// Validar si la colección existe y es válida
+// Validar si la colección existe y es válida (sin cambios)
 const colletionExists = (collection = '', collections = []) => {
     const included = collections.includes(collection);
-
     if (!included) {
         throw new Error(`La colección ${collection} no es permitida, solo se permiten ${collections}`);
     }
-
     return true;
 };
 
