@@ -7,6 +7,14 @@ const Category = sequelize.define('category', {
     primaryKey: true,
     autoIncrement: true
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El nombre es obligatorio' },
+      notEmpty: { msg: 'El nombre no puede estar vacío' }
+    }
+  },
   
   state: {
     type: DataTypes.BOOLEAN,

@@ -1,15 +1,12 @@
 const { response } = require("express");
 const Buy = require("../models/buy");
 const Product = require("../models/product");
-const mongoose = require("mongoose");
 const Pay = require("../models/pay");
-const { v4: uuidv4 } = require ('uuid');
 const User = require("../models/user");
 const Client = require("../models/client");
 const { sequelize } = require("../database/config");
 const BuyItem = require("../models/buyitem");
 
-// Obtener todas las compras - paginado - total
 const getBuys = async (req, res) => {
     const { limit = 25, desde = 0 } = req.query;
 
@@ -19,12 +16,11 @@ const getBuys = async (req, res) => {
             include: [
                 { model: User, attributes: ['name'] },
                 { model: Client, attributes: ['dni', 'name', 'phone', 'address'] },
-                { model: Pay, attributes: ['numberpay', 'amountpay', 'date'] },
+                { model: Pay, attributes: ['id', 'amountpay', 'date'] },
                 { 
-                    model: Product,
-                    through: { attributes: ['quantity'] },
-                    as: 'products',
-                    attributes: ['name', 'price', 'description']
+                    model: BuyItem,
+                attributes: ['quantity','productId'] ,
+                 
                 }
             ],
             offset: Number(desde),
@@ -52,12 +48,10 @@ const getBuyByUser = async (req, res) => {
             include: [
                 { model: User, attributes: ['name'] },
                 { model: Client, attributes: ['dni', 'name', 'phone', 'address'] },
-                { model: Pay, attributes: ['numberpay', 'amountpay', 'date'] },
+                { model: Pay, attributes: ['id', 'amountpay', 'date'] },
                 { 
-                    model: Product,
-                    through: { attributes: ['quantity'] },
-                    as: 'products',
-                    attributes: ['name', 'price', 'description']
+                    model: BuyItem,
+                     attributes: ['quantity','productId'] ,
                 }
             ],
             offset: Number(desde),
@@ -67,7 +61,7 @@ const getBuyByUser = async (req, res) => {
         res.json({ total: count, buys });
         
     } catch (error) {
-        res.status(500).json({ msg: 'Error al obtener compras' });
+        res.status(500).json({ msg:'Error al obtener compras' });
     }
 };
 
@@ -85,12 +79,10 @@ const getBuyByClient = async (req, res) => {
             include: [
                 { model: User, attributes: ['name'] },
                 { model: Client, attributes: ['dni', 'name', 'phone', 'address'] },
-                { model: Pay, attributes: ['numberpay', 'amountpay', 'date'] },
+                { model: Pay, attributes: ['id', 'amountpay', 'date'] },
                 { 
-                    model: Product,
-                    through: { attributes: ['quantity'] },
-                    as: 'products',
-                    attributes: ['name', 'price', 'description']
+                    model: BuyItem,
+                     attributes: ['quantity','productId'] ,
                 }
             ],
             offset: Number(desde),
@@ -113,12 +105,10 @@ const getBuyById = async (req, res) => {
             include: [
                 { model: User, attributes: ['name'] },
                 { model: Client, attributes: ['dni', 'name', 'phone', 'address'] },
-                { model: Pay, attributes: ['numberpay', 'amountpay', 'date'] },
+                { model: Pay, attributes: ['id', 'amountpay', 'date'] },
                 { 
-                    model: Product,
-                    through: { attributes: ['quantity'] },
-                    as: 'products',
-                    attributes: ['name', 'price', 'description']
+                    model: BuyItem,
+                     attributes: ['quantity','productId'] ,
                 }
             ]
         });
@@ -193,7 +183,7 @@ const createBuy = async (req, res) => {
                 { model: User, attributes: ['name'] },
                 { model: Client , attributes: ['name',] },
                 { model: Pay },
-                { model: BuyItem, through: { attributes: ['quantity,productId,'] } }
+                { model: BuyItem,  attributes: ['quantity','productId'] } 
             ]
         });
 
@@ -246,9 +236,8 @@ const getBuyHistory = async (req, res) => {
             where: { userId },
             include: [
                 { 
-                    model: Product,
-                    through: { attributes: ['quantity'] },
-                    attributes: ['name', 'price']
+                    model: BuyItem,
+                     attributes: ['quantity','productId'] ,
                 },
                 { model: User, attributes: ['name'] }
             ]
