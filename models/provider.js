@@ -68,15 +68,6 @@ const Provider = sequelize.define('provider', {
   }
 }, {
   timestamps: true,
-  getterMethods: {
-    toJSON() {
-      const values = { ...this.dataValues };
-      // Sequelize no tiene __v, pero mantenemos la estructura original
-      delete values.createdAt;
-      delete values.updatedAt;
-      return values;
-    }
-  }
 });
 
 Provider.sync({ force: false })

@@ -24,7 +24,7 @@ const getProductByCategory = async (req, res) => {
                 required: true
             }],
             offset: Number(desde),
-            limit: Number(limit)
+            limit: Number(limit),
         });
 
         res.json({ total: count, products });

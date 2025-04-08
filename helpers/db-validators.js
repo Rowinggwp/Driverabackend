@@ -3,6 +3,7 @@ const Client = require('../models/client');
 const Category = require('../models/category');
 const Product = require('../models/product');
 const User = require('../models/user');
+const Role = require('../models/role');
 
 // Validar si el nombre de la categoría es único
 const categoryNameUnique = async (name = '') => {
@@ -84,6 +85,15 @@ const colletionExists = (collection = '', collections = []) => {
     return true;
 };
 
+const validaterolebyname = async (roleId) => {
+    const role = await Role.findByPk(roleId);
+        if (role != "ADMIN_ROLE")
+            throw new Error(`El producto con el ID ${role.role} el usuario no es ADMIN`);
+
+
+
+}
+
 module.exports = {
     existBuyById,
     existClientById,
@@ -93,5 +103,6 @@ module.exports = {
     validateProducts,
     colletionExists,
     categoryNameUnique,
-    isEmailUnique 
+    isEmailUnique,
+    validaterolebyname
 };

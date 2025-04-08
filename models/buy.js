@@ -50,22 +50,12 @@ const Buy = sequelize.define('buy', {
     allowNull: false,
     references: {
       model: Pay,
-      key: 'numberpay'
+      key: 'id'
     }
   }
 }, {
   timestamps: true,
-  getterMethods: {
-    toJSON() {
-      const values = { ...this.dataValues };
-      delete values.state;
-      delete values.createdAt;
-      delete values.updatedAt;
-      values.uid = values.id;
-      delete values.id;
-      return values;
-    }
-  }
+ 
 });
 
 
@@ -79,10 +69,10 @@ Buy.belongsTo(Pay);
 
 Buy.sync({ force: false })
   .then(() => {
-    console.log('Tabla de Roles creada correctamente.');
+    console.log('Tabla de COMPRAS creada correctamente.');
   })
   .catch(err => {
-    console.error('Error al crear la tabla de Roles:', err);
+    console.error('Error al crear la tabla de COMPRAS:', err);
   });
 
 module.exports =  Buy ;

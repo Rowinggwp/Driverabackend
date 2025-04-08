@@ -6,6 +6,8 @@ const Pay = require("../models/pay");
 const { v4: uuidv4 } = require ('uuid');
 const User = require("../models/user");
 const Client = require("../models/client");
+const { sequelize } = require("../database/config");
+const BuyItem = require("../models/buyitem");
 
 // Obtener todas las compras - paginado - total
 const getBuys = async (req, res) => {
@@ -136,11 +138,10 @@ const createBuy = async (req, res) => {
     
     try {
         const { products, ...data } = req.body;
-        const numberpay = uuidv4();
+
 
         // Crear pago
         const pay = await Pay.create({
-            numberpay,
             amountpay: data.total,
             date: new Date()
         }, { transaction });
@@ -168,24 +169,31 @@ const createBuy = async (req, res) => {
         // Crear compra
         const buy = await Buy.create({
             ...data,
+            clientId: data.client,
             userId: req.usuario.id,
             payId: pay.id
         }, { transaction });
 
-        // Crear relaciones con productos
-        await buy.setProducts(products.map(p => ({
-            productId: p.productId,
-            quantity: p.quantity
-        })), { transaction });
+       
+
+        const buyItems = await Promise.all(
+            products.map(async (p) => {
+                return await BuyItem.create({
+                    buyId: buy.id,
+                    productId: p.productId,
+                    quantity: p.quantity
+                }, { transaction });
+            })
+        );
 
         await transaction.commit();
         
         const newBuy = await Buy.findByPk(buy.id, {
             include: [
                 { model: User, attributes: ['name'] },
-                { model: Client },
+                { model: Client , attributes: ['name',] },
                 { model: Pay },
-                { model: Product, through: { attributes: ['quantity'] } }
+                { model: BuyItem, through: { attributes: ['quantity,productId,'] } }
             ]
         });
 

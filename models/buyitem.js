@@ -43,7 +43,7 @@ const BuyItem = sequelize.define('buyItem', {
   BuyItem.belongsTo(Product);
   
 
-  BuyItem.sync({ force: false })
+ BuyItem.sync({ force: false })
   .then(() => {
     console.log('Tabla de compra items creada correctamente.');
   })

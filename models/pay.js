@@ -2,7 +2,7 @@ const { DataTypes, Sequelize } = require('sequelize');
 const { sequelize } = require('../database/config');
 
 const Pay = sequelize.define('pay', {
-  numberpay: {
+  id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
@@ -28,15 +28,6 @@ const Pay = sequelize.define('pay', {
   }
 }, {
   timestamps: true,
-  getterMethods: {
-    toJSON() {
-      const values = { ...this.dataValues };
-      delete values.createdAt;
-      delete values.updatedAt;
-      delete values.state;
-      return values;
-    }
-  }
 });
 
 Pay.sync({ force: false })

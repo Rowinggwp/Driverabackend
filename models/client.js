@@ -54,17 +54,6 @@ const Client = sequelize.define('client', {
   }
 }, {
   timestamps: true,
-  getterMethods: {
-    toJSON() {
-      const values = { ...this.dataValues };
-      // Eliminamos campos técnicos y renombramos ID
-      delete values.createdAt;
-      delete values.updatedAt;
-      values.uid = values.id;
-      delete values.id;
-      return values;
-    }
-  }
 });
 
 Client.sync({ force: false })

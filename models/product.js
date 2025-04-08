@@ -81,17 +81,7 @@ const Product = sequelize.define('product', {
   }
 }, {
   timestamps: true,
-  getterMethods: {
-    toJSON() {
-      const values = { ...this.dataValues };
-      // Eliminamos campos técnicos y foreign keys
-      delete values.createdAt;
-      delete values.updatedAt;
-      delete values.userId;
-      delete values.categoryId;
-      return values;
-    }
-  }
+  
 });
 
 User.hasMany(Product);

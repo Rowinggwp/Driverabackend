@@ -5,6 +5,7 @@ const registerAdmin = async (req, res) => {
     const { name, email, password } = req.body;
 
     try {
+        
         // Verificar si el correo ya existe
         const userExist = await User.findOne({ 
             where: { email } 
@@ -23,7 +24,7 @@ const registerAdmin = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role: 'ADMIN_ROLE'
+            roleId: 2
         });
 
         // Eliminar password de la respuesta
