@@ -15,7 +15,7 @@ router.get('/byuser', [
 ] , getUserByToken);
 
 router.get('/:id', [
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existUserById),
     validateFields
 ], getUserById);
@@ -30,14 +30,14 @@ router.post('/', [
 
 router.put('/:id', [
     validateJWT,
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existUserById),
     validateFields
 ], updateUser);
 
 router.delete('/:id', [
     validateJWT,
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existUserById),
     validateFields
 ], deleteUser);

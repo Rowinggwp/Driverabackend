@@ -19,6 +19,9 @@
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.14.0",
+    "sequelize": "^6.37.7",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

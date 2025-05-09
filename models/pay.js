@@ -1,43 +1,41 @@
-const { Schema, model } = require('mongoose');
+const { DataTypes, Sequelize } = require('sequelize');
+const { sequelize } = require('../database/config');
 
-const PaySchema = Schema({
-    // Número de pago, que se incrementará automáticamente
-    numberpay: {
-        type: String,
-        required: true,
-        unique: true // Debe ser único
-    },
-    amountpay: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    date: {
-        type: Date,
-        default: Date.now
-    },
-    state: {
-        type: Boolean,
-        default: true 
-    },
+const Pay = sequelize.define('pay', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  amountpay: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+    validate: {
+      min: {
+        args: [0],
+        msg: 'El monto no puede ser negativo'
+      }
+    }
+  },
+  date: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW
+  },
+  state: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  }
+}, {
+  timestamps: true,
 });
 
-// Hook para generar un número de pago secuencial
-PaySchema.pre('save', async function (next) {
-    const lastPay = await this.constructor.findOne().sort({ numberpay: -1 });
-    
-    // Convertimos numberpay a número antes de incrementar
-    const lastNumber = lastPay ? Number(lastPay.numberpay) : 0;
+Pay.sync({ force: false })
+  .then(() => {
+    console.log('Tabla de pagos creada correctamente.');
+  })
+  .catch(err => {
+    console.error('Error al crear la tabla de pagos:', err);
+  });
 
-    // Incrementamos el número de pago
-    this.numberpay = (lastNumber + 1).toString(); // Convertimos a string para guardar
-
-    next();
-});
-
-PaySchema.methods.toJSON = function () {
-    const { __v, state, ...payObject } = this.toObject();
-    return payObject;
-}
-
-module.exports = model('Pay', PaySchema);
+module.exports = Pay;

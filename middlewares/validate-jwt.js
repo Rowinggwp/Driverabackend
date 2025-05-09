@@ -16,7 +16,7 @@ const validateJWT = async (req = request, res = response, next) => {
 
         const { uid } = jwt.verify ( token , process.env.SECRETORPRIVETEKEY)
         // recuperar datos del usuario autenticado
-        const usuarioAuth = await User.findById( uid );
+        const usuarioAuth = await User.findByPk( uid );
         
         if ( !usuarioAuth ){
             return res.status(401).json({

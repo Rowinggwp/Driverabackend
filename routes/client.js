@@ -16,7 +16,7 @@ router.get('/', [
 router.get('/:id', [
     validateJWT,
     isAdminRole,
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existClientById),
     validateFields
 ], getClientById);
@@ -32,7 +32,7 @@ router.post('/', [
 router.put('/:id', [
     validateJWT,
     isAdminRole, 
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existClientById),
     check('name', 'El nombre es obligatorio').not().isEmpty(),
     check('email', 'El email no es válido').isEmail(),
@@ -43,7 +43,7 @@ router.put('/:id', [
 router.delete('/:id', [
     validateJWT,
     isAdminRole, 
-    check('id', 'El ID no es válido').isMongoId(),
+    check('id', 'El ID no es válido').isNumeric(),
     check('id').custom(existClientById),
     validateFields
 ], deleteClient);

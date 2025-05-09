@@ -1,21 +1,35 @@
-const { Schema, model } = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../database/config');
 
-const CategorySchema = Schema({
-    name: {
-        type: String,
-        required: [true, 'El nombre de la categoría es obligatorio'],
-        unique: true
-    },
-    state: {
-        type: Boolean,
-        default: true
-    },
-
+const Category = sequelize.define('category', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notNull: { msg: 'El nombre es obligatorio' },
+      notEmpty: { msg: 'El nombre no puede estar vacío' }
+    }
+  },
+  
+  state: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  }
+}, {
+  timestamps: true,
 });
 
-CategorySchema.methods.toJSON = function () {
-    const { __v, state, ...categoryObject } = this.toObject();
-    return categoryObject;
-}
+Category.sync({ force: false })
+  .then(() => {
+    console.log('Tabla de categoria creada correctamente.');
+  })
+  .catch(err => {
+    console.error('Error al crear la tabla de categoria:', err);
+  });
 
-module.exports = model('Category', CategorySchema);
+module.exports = Category;

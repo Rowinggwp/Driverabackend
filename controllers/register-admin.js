@@ -5,23 +5,35 @@ const registerAdmin = async (req, res) => {
     const { name, email, password } = req.body;
 
     try {
+        
         // Verificar si el correo ya existe
-        let user = await User.findOne({ email });
-        if (user) {
+        const userExist = await User.findOne({ 
+            where: { email } 
+        });
+        
+        if (userExist) {
             return res.status(400).json({ msg: 'El correo ya está registrado' });
         }
 
-        // Crear el usuario con rol de administrador
-        user = new User({ name, email, password, role: 'ADMIN_ROLE' });
-
         // Encriptar contraseña
         const salt = bcryptjs.genSaltSync();
-        user.password = bcryptjs.hashSync(password, salt);
+        const hashedPassword = bcryptjs.hashSync(password, salt);
 
-        // Guardar en la BD
-        await user.save();
+        // Crear el usuario con rol de administrador
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            roleId: 2
+        });
 
-        res.json({ msg: 'Administrador registrado con éxito', user });
+        // Eliminar password de la respuesta
+        const { password: _, ...userData } = user.get({ plain: true });
+
+        res.status(201).json({ 
+            msg: 'Administrador registrado con éxito',
+            user: userData
+        });
 
     } catch (error) {
         console.log(error);

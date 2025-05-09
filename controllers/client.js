@@ -2,87 +2,111 @@ const { response, request } = require('express');
 const Client = require('../models/client');
 
 // Obtener clientes - paginado
-const getClients = async (req, res = response) => {
+const getClients = async (req, res) => {
     const { limit = 25, desde = 0 } = req.query;
-    const query = { state: true };
 
-    const [total, clients] = await Promise.all([
-        Client.countDocuments(query),
-        Client.find(query).skip(Number(desde)).limit(Number(limit))
-    ]);
+    try {
+        const { count, rows: clients } = await Client.findAndCountAll({
+            where: { state: true },
+            offset: Number(desde),
+            limit: Number(limit),
+            attributes: { exclude: ['password'] } // Si tienes campo password
+        });
 
-    res.json({
-        total,
-        clients
-    });
+        res.json({ total: count, clients });
+        
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al obtener clientes' });
+    }
 };
 
-const createClient = async (req, res = response) => {
+const createClient = async (req, res) => {
     const { dni, state, ...data } = req.body;
 
-    const existingClient = await Client.findOne({ dni });
+    try {
+        // Buscar cliente existente por DNI
+        const existingClient = await Client.findOne({ where: { dni } });
 
-    if (existingClient) {
-        const updatedData = { dni, ...data };
+        if (existingClient) {
+            // Actualizar cliente existente
+            await existingClient.update({ dni, ...data });
+            
+            return res.status(200).json({
+                msg: 'Cliente actualizado y reemplazado',
+                client: existingClient
+            });
+        }
 
-        const updatedClient = await Client.findByIdAndUpdate(
-            existingClient._id,
-            updatedData,
-            { new: true }
-        );
-
-        return res.status(200).json({
-            msg: 'Cliente actualizado y reemplazado',
-            client: updatedClient
+        // Crear nuevo cliente
+        const client = await Client.create({ dni, ...data });
+        
+        res.status(201).json({
+            msg: 'Cliente creado',
+            client
         });
+        
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al crear cliente' });
     }
-
-    const client = new Client({ dni, ...data });
-    await client.save();
-
-    res.status(201).json({
-        msg: 'Cliente creado',
-        client
-    });
 };
 
-
-
 // Actualizar cliente
-const updateClient = async (req = request, res = response) => {
+const updateClient = async (req, res) => {
     const { id } = req.params;
     const { state, ...data } = req.body;
 
-    const client = await Client.findByIdAndUpdate(id, data, { new: true });
+    try {
+        const client = await Client.findByPk(id);
+        
+        if (!client) {
+            return res.status(404).json({ msg: 'Cliente no encontrado' });
+        }
 
-    res.json(client);
+        await client.update(data);
+        res.json(client);
+        
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al actualizar cliente' });
+    }
 };
 
-// Eliminar cliente
-const deleteClient = async (req = request, res = response) => {
+// Eliminar cliente (cambio de estado)
+const deleteClient = async (req, res) => {
     const { id } = req.params;
 
-    // Opción 1: Eliminar físicamente
-    // const client = await Client.findByIdAndDelete(id);
+    try {
+        const client = await Client.findByPk(id);
+        
+        if (!client) {
+            return res.status(404).json({ msg: 'Cliente no encontrado' });
+        }
 
-    // Opción 2: Cambiar el estado
-    const client = await Client.findByIdAndUpdate(id, { state: false }, { new: true });
-
-    res.json(client);
+        await client.update({ state: false });
+        res.json({ msg: 'Cliente desactivado', client });
+        
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al eliminar cliente' });
+    }
 };
 
 // Obtener cliente por ID
-const getClientById = async (req, res = response) => {
+const getClientById = async (req, res) => {
     const { id } = req.params;
-    const client = await Client.findById(id);
 
-    if (!client || !client.state) {
-        return res.status(404).json({
-            msg: 'Cliente no encontrado'
+    try {
+        const client = await Client.findByPk(id, {
+            attributes: { exclude: ['password'] } // Si aplica
         });
-    }
+        
+        if (!client || !client.state) {
+            return res.status(404).json({ msg: 'Cliente no encontrado' });
+        }
 
-    res.json(client);
+        res.json(client);
+        
+    } catch (error) {
+        res.status(500).json({ msg: 'Error al obtener cliente' });
+    }
 };
 
 module.exports = {
